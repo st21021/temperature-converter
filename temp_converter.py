@@ -78,10 +78,14 @@ class Converter:
 
     def calc(self, unitto):
         '''Calculate the temperature conversion and display with label'''
-        if unitto == "Centigrade":
-            self.temp_out.set(f"{(self.temp_in.get()-32)*5/9:.2f}°C")
-        elif unitto == "Fahrenheit":
-            self.temp_out.set(f"{(self.temp_in.get()*9/5)+32:.2f}°F")
+        try:
+            temp_in = self.temp_in.get()
+            if unitto == "Centigrade":
+                self.temp_out.set(f"{(temp_in-32)*5/9:.2f}°C")
+            elif unitto == "Fahrenheit":
+                self.temp_out.set(f"{(temp_in*9/5)+32:.2f}°F")
+        except:
+            self.temp_out.set("Please enter numbers only")
 
 
     def back(self):
