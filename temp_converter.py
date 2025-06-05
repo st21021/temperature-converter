@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 
 class Menu:
 
@@ -48,14 +49,18 @@ class Converter:
         self.converterframe.columnconfigure([0, 1, 2], minsize=10)
 
         # Create title label
-        self.lbl_title = tk.Label(self.converterframe, text=f"Enter the temperature in {self.unitfrom}", 
+        self.lbl_title = tk.Label(self.converterframe, text=f"Enter the temperature in {self.unitfrom} and number of decimal places", 
                               justify="center")
         self.lbl_title.grid(row=0, column=0, columnspan=3)
 
         # Create entry box and it's associated variable - temperature in
-        self.temp_in = tk.IntVar(self.converterframe)
+        self.temp_in = tk.StringVar(self.converterframe)
         self.entry = tk.Entry(self.converterframe, textvariable=self.temp_in)
-        self.entry.grid(row=1, column=0, columnspan=3)
+        self.entry.grid(row=1, column=0, columnspan=2, sticky="WE")
+
+        self.dp = ttk.Combobox(self.converterframe, values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], width=5)
+        self.dp.current(2)
+        self.dp.grid(row=1, column=2)
 
         # Create buttons to calculate the conversion, go back to menu, and reset
         self.btn_calc = tk.Button(self.converterframe, text="Calculate", command=lambda: self.calc(self.unitto))
@@ -79,9 +84,9 @@ class Converter:
     def calc(self, unitto):
         '''Calculate the temperature conversion and display with label'''
         try:
-            temp_in = self.temp_in.get()
+            temp_in = float(self.temp_in.get())
             if unitto == "Centigrade":
-                self.temp_out.set(f"{(temp_in-32)*5/9:.2f}°C")
+                self.temp_out.set(f"{(temp_in-32)*5/9:.{self.dp.get()}f}°C")
             elif unitto == "Fahrenheit":
                 self.temp_out.set(f"{(temp_in*9/5)+32:.2f}°F")
         except:
