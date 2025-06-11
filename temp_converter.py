@@ -4,13 +4,15 @@ Converts a temperature value between degrees Centigrade and degrees Fahrenheit
 v1 - Converts units of temperature using tkinter GUI
 v2 - Validates temperature input is a number
 v3 - Window and widgets are resizable with a minimum window size
-10/06/2025
+v4 - Validates temp above absolute zero and uses sf instead of dp
+11/06/2025
 Created by Luke Marshall
 """
 
 
 import tkinter as tk
 from tkinter import ttk
+from math import *
 
 
 class Menu:
@@ -68,7 +70,7 @@ class Converter:
 
         # Create title label
         self.lbl_title = tk.Label(self.converterframe,
-                                  text=f"Enter the temperature in {self.unitfrom} and number of decimal places",
+                                  text=f"Enter the temperature in {self.unitfrom} and number of significant figures",
                                   justify="center")
         self.lbl_title.grid(row=0, column=0, columnspan=3)
 
@@ -79,10 +81,10 @@ class Converter:
         self.entry.grid(row=1, column=0, columnspan=2, padx=10, pady=10,
                         sticky="NSWE")
 
-        self.dp = ttk.Combobox(self.converterframe,
-                               values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], width=5)
-        self.dp.current(2)
-        self.dp.grid(row=1, column=2)
+        self.sf = ttk.Combobox(self.converterframe,
+                               values=[1, 2, 3, 4, 5, 6, 7, 8, 9], width=5)
+        self.sf.current(2)
+        self.sf.grid(row=1, column=2)
 
         # Create buttons to calculate conversion, return to menu, and reset
         self.btn_calc = tk.Button(self.converterframe, text="Calculate",
@@ -112,10 +114,18 @@ class Converter:
         try:
             temp_in = float(self.temp_in.get())
             if unitto == "Centigrade":
-                self.temp_out.set(f"{(temp_in-32)*5/9:.{self.dp.get()}f}°C")
+                if temp_in < -459.67:
+                    self.temp_out.set("Minimum temperature is -459.67°F")
+                else:
+                    temp_out = (temp_in-32)*5/9
+                    self.temp_out.set(round_temp(temp_out, int(self.sf.get())) + "°C")
             elif unitto == "Fahrenheit":
-                self.temp_out.set(f"{(temp_in*9/5)+32:.2f}°F")
-        except:
+                if temp_in < -273.15:
+                    self.temp_out.set("Minimum temperature is -273.15°C")
+                else:
+                    temp_out = (temp_in*9/5)+32
+                    self.temp_out.set(round_temp(temp_out, int(self.sf.get())) + "°F")
+        except ValueError:
             self.temp_out.set("Please enter numbers only")
 
     def back(self):
@@ -127,6 +137,16 @@ class Converter:
         """Reset the entry box and output box"""
         self.temp_in.set("")
         self.temp_out.set("Converted temperature goes here")
+
+
+def round_temp(temp: float, sf: int):
+    """Rounds a temperature to a given number of significant figures"""
+
+    digits = (floor(log10(abs(temp))) + 1)
+    if digits <= sf:
+        return f"{temp:.{sf - digits}f}"
+    else:
+        return str(int((10**digits)*round(temp / (10**digits),sf)))
 
 
 root = tk.Tk()
