@@ -1,25 +1,28 @@
-"""Temperature Converter
+"""Temperature Converter.
 
 Converts a temperature value between degrees Centigrade and degrees Fahrenheit
+
 v1 - Converts units of temperature using tkinter GUI
 v2 - Validates temperature input is a number
 v3 - Window and widgets are resizable with a minimum window size
 v4 - Validates temp above absolute zero and uses sf instead of dp
-11/06/2025
+v5 - Displays integer outputs with groups of three digits e.g. 4 560 000°C
+
+13/06/2025
 Created by Luke Marshall
 """
 
 
 import tkinter as tk
 from tkinter import ttk
-from math import *
+import math
 
 
 class Menu:
-    """A menu frame to select type of temperature conversion"""
+    """A menu frame to select type of temperature conversion."""
 
     def __init__(self, master: tk.Tk):
-        """Initialise Menu object with a frame and pack frame into window"""
+        """Initialise Menu object with a frame and pack frame into window."""
         self.master = master
         self.menuframe = tk.Frame(self.master)
         self.menuframe.pack(expand=1, fill="both")
@@ -40,16 +43,16 @@ class Menu:
         self.btn_toF.grid(row=1, column=1, padx=10, pady=10, sticky="NSWE")
 
     def press(self, unitto: str):
-        """Close menu frame and create a Converter object"""
+        """Close menu frame and create a Converter object."""
         self.menuframe.destroy()
         converter = Converter(self.master, unitto)
 
 
 class Converter:
-    """A converter frame with temperature input and conversion output"""
+    """A converter frame with temperature input and conversion output."""
 
     def __init__(self, master: tk.Tk, unitto: str):
-        """Initialise Converter object with a frame and pack frame into window
+        """Initialise Converter object with a frame and pack it into window.
 
         unitto determines which unit the temperature is being converted to
         "C" means to Centigrade, "F" means to Fahrenheit
@@ -107,48 +110,70 @@ class Converter:
                                values=[1, 2, 3, 4, 5, 6, 7, 8, 9], width=5)
         self.sf.current(2)
         self.sf.grid(row=1, column=2)
-        self.sf.bind("<<ComboboxSelected>>", lambda event: self.calc(self.unitto))
+        self.sf.bind("<<ComboboxSelected>>",
+                     lambda event: self.calc(self.unitto))
 
         # Make variables the initial values
         self.reset()
 
     def calc(self, unitto):
-        """Calculate the temperature conversion and display with label"""
+        """Calculate the temperature conversion and display with label."""
         try:
+            # Convert entry input to float
             temp_in = float(self.temp_in.get())
             if unitto == "Centigrade":
+                # Make sure temp is scientifically possible
                 if temp_in < -459.67:
                     self.temp_out.set("Minimum temperature is -459.67°F")
                 else:
+                    # Calculate and display converted temperature
                     temp_out = (temp_in-32)*5/9
-                    self.temp_out.set(round_temp(temp_out, int(self.sf.get())) + "°C")
+                    self.temp_out.set(round_temp(temp_out,
+                                                 int(self.sf.get())) + "°C")
             elif unitto == "Fahrenheit":
+                # Make sure temp is scientifically possible
                 if temp_in < -273.15:
                     self.temp_out.set("Minimum temperature is -273.15°C")
                 else:
+                    # Calculate and display converted temperature
                     temp_out = (temp_in*9/5)+32
-                    self.temp_out.set(round_temp(temp_out, int(self.sf.get())) + "°F")
+                    self.temp_out.set(round_temp(temp_out,
+                                                 int(self.sf.get())) + "°F")
         except ValueError:
+            # If input isn't a number
             self.temp_out.set("Please enter numbers only")
 
     def back(self):
-        """Destory converter frame and open"""
+        """Destory converter frame and open."""
         self.converterframe.destroy()
         menu = Menu(self.master)
 
     def reset(self):
-        """Reset the entry box and output box"""
+        """Reset the entry box and output box."""
         self.temp_in.set("")
         self.temp_out.set("Converted temperature goes here")
 
 
 def round_temp(temp: float, sf: int):
-    """Rounds a temperature to a given number of significant figures"""
-    digits = (floor(log10(abs(temp))) + 1)
-    if digits <= sf:
-        return f"{temp:.{sf - digits}f}"
+    """Round a temperature to a given number of significant figures."""
+    # Get number of digits in the temperature
+    digits = (math.floor(math.log10(abs(temp))) + 1)
+
+    # sf - digits gives the number of decimal places needed
+    if digits < sf:
+        # creates a string of the rounded temp
+        temp = f"{temp:.{sf - digits}f}"
     else:
-        return str(int(round(temp, sf - digits)))
+        # temp must be converted to int then str to get rid of decimals
+        temp = str(int(round(temp, sf - digits)))
+
+        # add space between every 3rd digit from the end
+        j = 0  # tracks number of spaces added
+        for i in range(-1, -digits, -1):
+            if i % 3 == 0:
+                temp = temp[:(i-j)] + " " + temp[(i-j):]
+                j += 1
+    return temp
 
 
 root = tk.Tk()
