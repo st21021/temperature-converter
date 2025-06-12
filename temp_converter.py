@@ -64,6 +64,7 @@ class Converter:
             self.unitto = "Fahrenheit"
             self.unitfrom = "Centigrade"
 
+        # Ensure correct number of rows and columns, and make window responsive
         self.converterframe.rowconfigure([0, 1, 2, 3], minsize=10)
         self.converterframe.columnconfigure([0, 1, 2], minsize=10, weight=1)
         self.converterframe.rowconfigure([1, 2, 3], minsize=10, weight=1)
@@ -80,11 +81,6 @@ class Converter:
                               justify="center")
         self.entry.grid(row=1, column=0, columnspan=2, padx=10, pady=10,
                         sticky="NSWE")
-
-        self.sf = ttk.Combobox(self.converterframe,
-                               values=[1, 2, 3, 4, 5, 6, 7, 8, 9], width=5)
-        self.sf.current(2)
-        self.sf.grid(row=1, column=2)
 
         # Create buttons to calculate conversion, return to menu, and reset
         self.btn_calc = tk.Button(self.converterframe, text="Calculate",
@@ -105,6 +101,13 @@ class Converter:
         self.lbl_ans = tk.Label(self.converterframe,
                                 textvariable=self.temp_out)
         self.lbl_ans.grid(row=3, column=0, columnspan=3)
+
+        # Create combobox to select precision of output
+        self.sf = ttk.Combobox(self.converterframe,
+                               values=[1, 2, 3, 4, 5, 6, 7, 8, 9], width=5)
+        self.sf.current(2)
+        self.sf.grid(row=1, column=2)
+        self.sf.bind("<<ComboboxSelected>>", lambda event: self.calc(self.unitto))
 
         # Make variables the initial values
         self.reset()
@@ -141,12 +144,11 @@ class Converter:
 
 def round_temp(temp: float, sf: int):
     """Rounds a temperature to a given number of significant figures"""
-
     digits = (floor(log10(abs(temp))) + 1)
     if digits <= sf:
         return f"{temp:.{sf - digits}f}"
     else:
-        return str(int((10**digits)*round(temp / (10**digits),sf)))
+        return str(int(round(temp, sf - digits)))
 
 
 root = tk.Tk()
